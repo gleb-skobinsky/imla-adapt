@@ -5,7 +5,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing
 
-import android.content.res.AssetManager
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.toSize
@@ -17,18 +16,19 @@ import dev.serhiiyaremych.imla.renderer.Texture
 import dev.serhiiyaremych.imla.renderer.Texture2D
 import dev.serhiiyaremych.imla.renderer.VertexBuffer
 import dev.serhiiyaremych.imla.renderer.toFloatBuffer
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_VERT
 import java.nio.FloatBuffer
 
 internal class SimpleQuadRenderer(
-    assetManager: AssetManager,
     val renderer: SimpleRenderer
 ) {
     private var vbo: VertexBuffer? = null
     private val simpleQuadShader by lazy(LazyThreadSafetyMode.NONE) {
         Shader.create(
-            assetManager = assetManager,
-            vertexAsset = "shader/simple_quad.vert",
-            fragmentAsset = "shader/simple_quad.frag"
+            name = "simple_quad",
+            vertexSrc = SIMPLE_QUAD_VERT,
+            fragmentSrc = SIMPLE_QUAD_FRAG
         ).apply {
             bindUniformBlock(
                 SimpleRenderer.TEXTURE_DATA_UBO_BLOCK,

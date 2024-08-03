@@ -86,7 +86,7 @@ public class UiLayerRenderer(
     private val renderer2D: Renderer2D = Renderer2D()
     private val simpleRenderer: SimpleRenderer = SimpleRenderer()
     private val simpleQuadRenderer: SimpleQuadRenderer =
-        SimpleQuadRenderer(assetManager, simpleRenderer)
+        SimpleQuadRenderer(simpleRenderer)
     private val glRenderer: GLRenderer = GLRenderer().apply {
         start("GLUiLayerRenderer")
     }

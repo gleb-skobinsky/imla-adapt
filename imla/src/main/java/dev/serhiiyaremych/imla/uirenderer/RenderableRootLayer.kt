@@ -34,6 +34,8 @@ import dev.serhiiyaremych.imla.renderer.SimpleRenderer
 import dev.serhiiyaremych.imla.renderer.Texture
 import dev.serhiiyaremych.imla.renderer.Texture2D
 import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_EXT_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_VERT
 
 internal class RenderableRootLayer(
     private val assetManager: AssetManager,
@@ -103,9 +105,9 @@ internal class RenderableRootLayer(
                 }
 
                 extOesShaderProgram = Shader.create(
-                    assetManager = assetManager,
-                    vertexAsset = "shader/simple_quad.vert",
-                    fragmentAsset = "shader/simple_ext_quad.frag"
+                    name = "simple_quad",
+                    vertexSrc = SIMPLE_QUAD_VERT,
+                    fragmentSrc = SIMPLE_QUAD_EXT_FRAG
                 ).apply {
                     bindUniformBlock(
                         SimpleRenderer.TEXTURE_DATA_UBO_BLOCK,
