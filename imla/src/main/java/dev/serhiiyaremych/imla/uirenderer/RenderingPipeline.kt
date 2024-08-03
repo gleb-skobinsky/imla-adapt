@@ -42,7 +42,6 @@ internal class RenderingPipeline(
             val maskRenderer = masks.getOrPut(renderObject.id) {
                 MaskTextureRenderer(
                     density = density,
-                    assetManager = assetManager,
                     renderer2D = renderer2D,
                     simpleQuadRenderer = simpleRenderer,
                     onRenderComplete = { tex ->

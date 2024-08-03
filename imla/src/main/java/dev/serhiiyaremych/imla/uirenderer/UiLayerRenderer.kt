@@ -145,7 +145,7 @@ public class UiLayerRenderer(
         if (!isGLInitialized.get()) {
             glRenderer.execute {
                 RenderCommand.init()
-                renderer2D.init(assetManager)
+                renderer2D.init()
                 simpleRenderer.init()
 
                 renderableLayer.initialize()

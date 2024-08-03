@@ -5,7 +5,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer
 
-import android.content.res.AssetManager
 import android.graphics.PorterDuff
 import android.graphics.SurfaceTexture
 import android.view.Surface
@@ -34,12 +33,13 @@ import dev.serhiiyaremych.imla.renderer.SimpleRenderer
 import dev.serhiiyaremych.imla.renderer.Texture
 import dev.serhiiyaremych.imla.renderer.Texture2D
 import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_EXT_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_VERT
 import java.util.concurrent.atomic.AtomicBoolean
 
 // TODO: Refactor it to custom shader
 internal class MaskTextureRenderer(
     density: Density,
-    private val assetManager: AssetManager,
     private val renderer2D: Renderer2D,
     private val simpleQuadRenderer: SimpleQuadRenderer,
     private val onRenderComplete: (Texture2D) -> Unit
@@ -66,9 +66,9 @@ internal class MaskTextureRenderer(
         }
 
         extOesShaderProgram = Shader.create(
-            assetManager = assetManager,
-            vertexAsset = "shader/simple_quad.vert",
-            fragmentAsset = "shader/simple_ext_quad.frag"
+            name = "simple_quad",
+            vertexSrc = SIMPLE_QUAD_VERT,
+            fragmentSrc = SIMPLE_QUAD_EXT_FRAG
         ).apply {
             bindUniformBlock(
                 SimpleRenderer.TEXTURE_DATA_UBO_BLOCK,
@@ -124,28 +124,28 @@ internal class MaskTextureRenderer(
 
     fun renderMask(glRenderer: GLRenderer, brush: Brush, size: IntSize) =
         trace("MaskTextureRenderer#renderMask") {
-        if (invalidateBySize(size)) glRenderer.execute { this.initialize(size) }
+            if (invalidateBySize(size)) glRenderer.execute { this.initialize(size) }
 
-        if (shouldRedraw(brush)) {
-            glRenderer.execute {
-                trace("MaskTextureRenderer#shouldRedraw") {
-                    val hwCanvas = surface.lockHardwareCanvas()
-                    hwCanvas.drawColor(Color.Transparent.toArgb(), PorterDuff.Mode.CLEAR)
-                    drawScope.draw(
-                        density = this,
-                        layoutDirection = LayoutDirection.Ltr,
-                        canvas = Canvas(hwCanvas),
-                        size = size.toSize()
-                    ) {
-                        drawRect(brush)
+            if (shouldRedraw(brush)) {
+                glRenderer.execute {
+                    trace("MaskTextureRenderer#shouldRedraw") {
+                        val hwCanvas = surface.lockHardwareCanvas()
+                        hwCanvas.drawColor(Color.Transparent.toArgb(), PorterDuff.Mode.CLEAR)
+                        drawScope.draw(
+                            density = this,
+                            layoutDirection = LayoutDirection.Ltr,
+                            canvas = Canvas(hwCanvas),
+                            size = size.toSize()
+                        ) {
+                            drawRect(brush)
+                        }
+                        surface.unlockCanvasAndPost(hwCanvas)
                     }
-                    surface.unlockCanvasAndPost(hwCanvas)
                 }
+            } else {
+                this.onRenderComplete(maskExternalTexture)
             }
-        } else {
-            this.onRenderComplete(maskExternalTexture)
         }
-    }
 
     fun destroy() {
         if (isInitialized.get()) {

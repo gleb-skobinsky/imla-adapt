@@ -201,9 +201,7 @@ internal class OpenGLShader(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OpenGLShader
-
-        return rendererId == other.rendererId
+        return rendererId == (other as? OpenGLShader)?.rendererId
     }
 
     override fun hashCode(): Int {

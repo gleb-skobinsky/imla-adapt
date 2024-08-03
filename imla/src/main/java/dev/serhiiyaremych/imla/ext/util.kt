@@ -44,3 +44,5 @@ internal inline fun checkGlError(action: Unit = Unit) {
 internal fun throwError(errorCode: Int) {
     error(errorCode)
 }
+
+public fun String.quoted(): String = '"' + this + '"'

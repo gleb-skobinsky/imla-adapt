@@ -7,7 +7,6 @@
 
 package dev.serhiiyaremych.imla.renderer
 
-import android.content.res.AssetManager
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -20,10 +19,12 @@ import dev.romainguy.kotlin.math.rotation
 import dev.romainguy.kotlin.math.scale
 import dev.romainguy.kotlin.math.translation
 import dev.romainguy.kotlin.math.transpose
-import dev.serhiiyaremych.imla.ext.checkGlError
 import dev.serhiiyaremych.imla.renderer.camera.OrthographicCamera
 import dev.serhiiyaremych.imla.renderer.objects.QuadShaderProgram
 import dev.serhiiyaremych.imla.renderer.primitive.QuadVertex
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.DEFAULT_QUAD_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.DEFAULT_QUAD_VERT
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.EXTERNAL_QUAD_FRAG
 
 internal const val MAX_QUADS = 50
 internal const val MAX_VERTICES = MAX_QUADS * 4
@@ -37,7 +38,7 @@ internal class Renderer2D {
 
     private var isDrawingScene: Boolean = false
 
-    fun init(assetManager: AssetManager) {
+    fun init() {
         val quadIndices = IntArray(MAX_INDICES)
         var offset = 0
         for (i in quadIndices.indices step 6) {
@@ -54,9 +55,9 @@ internal class Renderer2D {
         val quadVertexArray: VertexArray = VertexArray.create()
         val defaultQuadShaderProgram = QuadShaderProgram(
             shader = Shader.create(
-                assetManager = assetManager,
-                vertexAsset = "shader/default_quad.vert",
-                fragmentAsset = "shader/default_quad.frag"
+                name = "default_quad",
+                vertexSrc = DEFAULT_QUAD_VERT,
+                fragmentSrc = DEFAULT_QUAD_FRAG
             )
         )
         val quadVertexBuffer: VertexBuffer =
@@ -67,9 +68,9 @@ internal class Renderer2D {
         quadVertexArray.indexBuffer = IndexBuffer.create(quadIndices)
         val externalQuadShaderProgram = QuadShaderProgram(
             shader = Shader.create(
-                assetManager = assetManager,
-                vertexAsset = "shader/default_quad.vert",
-                fragmentAsset = "shader/external_quad.frag"
+                name = "default_quad",
+                vertexSrc = DEFAULT_QUAD_VERT,
+                fragmentSrc = EXTERNAL_QUAD_FRAG
             )
         )
         val quadIndexCount = 0
