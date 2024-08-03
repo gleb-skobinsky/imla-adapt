@@ -7,7 +7,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing.blur
 
-import android.content.res.AssetManager
 import androidx.annotation.FloatRange
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
@@ -19,15 +18,17 @@ import dev.serhiiyaremych.imla.renderer.ShaderProgram
 import dev.serhiiyaremych.imla.renderer.objects.defaultQuadBufferLayout
 import dev.serhiiyaremych.imla.renderer.objects.defaultQuadVertexMapper
 import dev.serhiiyaremych.imla.renderer.primitive.QuadVertex
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.BLUR_QUAD_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.DEFAULT_QUAD_VERT
 
-internal class BlurShaderProgram(assetManager: AssetManager) : ShaderProgram {
+internal class BlurShaderProgram : ShaderProgram {
     private val horizontalDirection = Float2(x = 1.0f)
     private val verticalDirection = Float2(y = 1.0f)
 
     override val shader: Shader = Shader.create(
-        assetManager = assetManager,
-        vertexAsset = "shader/default_quad.vert",
-        fragmentAsset = "shader/blur_quad.frag",
+        name = "default_quad",
+        vertexSrc = DEFAULT_QUAD_VERT,
+        fragmentSrc = BLUR_QUAD_FRAG
     )
     override val vertexBufferLayout: BufferLayout = defaultQuadBufferLayout
     override val componentsCount: Int = vertexBufferLayout.elements.sumOf { it.type.components }
