@@ -10,13 +10,11 @@ import android.view.Choreographer
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
-import androidx.activity.compose.ReportDrawnWhen
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,7 +32,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -61,14 +58,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,7 +79,6 @@ import dev.serhiiyaremych.imla.uirenderer.Style
 import dev.serhiiyaremych.imla.uirenderer.UiLayerRenderer
 import dev.serhiiyaremych.imla.uirenderer.rememberUiLayerRenderer
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
 
@@ -117,16 +110,16 @@ class MainActivity : ComponentActivity() {
                             .blurSource(uiRenderer)
                             .haze(hazeState),
                     ) {
-                        Content(modifier = Modifier
-                            .fillMaxSize(),
+                        Content(
+                            modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(top = TopAppBarDefaults.MediumAppBarExpandedHeight),
-                            onImageClick = { viewingImage.value = it },
-                            onScroll = { /*uiRenderer.onUiLayerUpdated()*/ })
+                            onImageClick = { viewingImage.value = it }
+                        )
                     }
                     val showBottomSheet = remember { mutableStateOf(false) }
                     Column(modifier = Modifier.matchParentSize()) {
                         // Layer 0 above full height content
-                        BlurryTopAppBar(uiRenderer, hazeState)
+                        BlurryTopAppBar(uiRenderer)
                         Spacer(modifier = Modifier.weight(1f))
                         // Layer 1 full height content
                         BlurryBottomNavBar(uiRenderer) {
@@ -155,7 +148,7 @@ class MainActivity : ComponentActivity() {
                                 imageUrl = viewingImage.value,
                                 onDismiss = { viewingImage.value = "" })
                         }
-                        DisposableEffect(key1 = Unit) {
+                        DisposableEffect(Unit) {
                             onDispose { uiRenderer.onUiLayerUpdated() }
                         }
                     }
@@ -222,21 +215,9 @@ class MainActivity : ComponentActivity() {
                                         (32f * expandFraction).roundToInt().coerceAtLeast(1)
                                 }
                         }
-
                     }
 
                 }
-                val fullyDrawn = remember { mutableStateOf(false) }
-                LaunchedEffect(uiRenderer.isInitialized, fullyDrawn) {
-                    snapshotFlow { uiRenderer.isInitialized.value }
-                        .collect {
-                            if (it) {
-                                delay(1000)
-                                fullyDrawn.value = true
-                            }
-                        }
-                }
-                ReportDrawnWhen { fullyDrawn.value }
             }
         }
     }
@@ -251,21 +232,8 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
 //                .shadow(8.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .border(
-                    Dp.Hairline,
-                    Color.DarkGray,
-                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                ),
+            ,
             uiLayerRenderer = uiRenderer,
-//            blurMask = Brush.verticalGradient(
-//                colors = listOf(
-//                    Color.White.copy(alpha = 0.0f),
-//                    Color.White.copy(alpha = 0.6f),
-//                    Color.White.copy(alpha = 0.9f),
-//                    Color.White.copy(alpha = 1.0f),
-//                    Color.White.copy(alpha = 1.0f),
-//                ),
-//            ),
             style = Style(
                 blurRadius = 6.dp,
                 noiseAlpha = 0.2f
@@ -305,21 +273,12 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     @OptIn(ExperimentalMaterial3Api::class)
-    private fun BlurryTopAppBar(uiRenderer: UiLayerRenderer, hazeState: HazeState) {
+    private fun BlurryTopAppBar(uiRenderer: UiLayerRenderer) {
         BackdropBlur(
             modifier = Modifier.requiredHeight(250.dp),
             uiLayerRenderer = uiRenderer,
-            blurMask = Brush.verticalGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 1.0f),
-                    Color.White.copy(alpha = 1.0f),
-                    Color.White.copy(alpha = 0.9f),
-                    Color.White.copy(alpha = 0.5f),
-                    Color.White.copy(alpha = 0.0f),
-                ),
-            ),
             style = Style(
-                blurRadius = 8.dp,
+                blurRadius = 2.dp,
                 noiseAlpha = 0.0f,
                 tint = Color.White.copy(alpha = 0.05f),
             )
@@ -336,39 +295,15 @@ class MainActivity : ComponentActivity() {
                 }
             )
         }
-
-//        Box(
-//            modifier = Modifier.requiredHeight(250.dp).hazeChild(hazeState, style = HazeStyle(tint = Color.Cyan.copy(alpha = 0.15f), blurRadius = 20.dp)),
-//        ) {
-//            TopAppBar(
-//                modifier = Modifier.statusBarsPadding(),
-//                title = { Text("Blur Demo") },
-//                windowInsets = WindowInsets(top = 0.dp),
-//                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-//                navigationIcon = {
-//                    IconButton(onClick = { /* "Open nav drawer" */ }) {
-//                        Icon(Icons.Filled.Menu, contentDescription = null)
-//                    }
-//                }
-//            )
-//        }
     }
 
     @Composable
     private fun Content(
         modifier: Modifier,
         contentPadding: PaddingValues,
-        onImageClick: (String) -> Unit,
-        onScroll: (Int) -> Unit
+        onImageClick: (String) -> Unit
     ) = trace("MainActivity#Content") {
         val scrollState = rememberLazyListState()
-        val currentOnScroll = rememberUpdatedState(onScroll).value
-        LaunchedEffect(key1 = scrollState, key2 = onScroll) {
-            snapshotFlow { scrollState.firstVisibleItemScrollOffset }.distinctUntilChanged()
-                .collect {
-                    currentOnScroll(it)
-                }
-        }
         val posts =
             ApiClient.getPosts().collectAsStateWithLifecycle(initialValue = persistentListOf())
         LazyColumn(modifier = modifier, state = scrollState, contentPadding = contentPadding) {
