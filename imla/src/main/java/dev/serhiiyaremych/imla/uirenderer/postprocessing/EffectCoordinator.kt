@@ -5,7 +5,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing
 
-import android.content.res.AssetManager
 import androidx.compose.ui.unit.Density
 import androidx.tracing.trace
 import dev.serhiiyaremych.imla.renderer.Bind
@@ -18,8 +17,7 @@ import dev.serhiiyaremych.imla.uirenderer.postprocessing.noise.NoiseEffect
 
 internal class EffectCoordinator(
     density: Density,
-    private val simpleQuadRenderer: SimpleQuadRenderer,
-    private val assetManager: AssetManager
+    private val simpleQuadRenderer: SimpleQuadRenderer
 ) : Density by density {
 
     private val effectCache: MutableMap<String, EffectsHolder> = mutableMapOf()
@@ -28,9 +26,9 @@ internal class EffectCoordinator(
         val effectSize = renderObject.lowResLayer.subTextureSize
 
         return EffectsHolder(
-            blurEffect = BlurEffect(assetManager, simpleQuadRenderer).apply { setup(effectSize) },
-            noiseEffect = NoiseEffect(assetManager, simpleQuadRenderer),
-            maskEffect = MaskEffect(assetManager, simpleQuadRenderer)
+            blurEffect = BlurEffect(simpleQuadRenderer).apply { setup(effectSize) },
+            noiseEffect = NoiseEffect(simpleQuadRenderer),
+            maskEffect = MaskEffect(simpleQuadRenderer)
         )
     }
 

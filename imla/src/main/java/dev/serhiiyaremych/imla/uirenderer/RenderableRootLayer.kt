@@ -5,7 +5,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer
 
-import android.content.res.AssetManager
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.SurfaceTexture
@@ -38,7 +37,6 @@ import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_EXT_FRAG
 import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_VERT
 
 internal class RenderableRootLayer(
-    private val assetManager: AssetManager,
     private val layerDownsampleFactor: Int,
     private val density: Density,
     internal val graphicsLayer: GraphicsLayer,

@@ -5,7 +5,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing.noise
 
-import android.content.res.AssetManager
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.trace
 import dev.serhiiyaremych.imla.renderer.Bind
@@ -18,17 +17,18 @@ import dev.serhiiyaremych.imla.renderer.SimpleRenderer
 import dev.serhiiyaremych.imla.renderer.Texture
 import dev.serhiiyaremych.imla.uirenderer.RenderableScope
 import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.NOISE_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_VERT
 import kotlin.properties.Delegates
 
 internal class NoiseEffect(
-    assetManager: AssetManager,
     private val simpleQuadRenderer: SimpleQuadRenderer
 ) {
 
     private val shader: Shader = Shader.create(
-        assetManager = assetManager,
-        vertexAsset = "shader/simple_quad.vert",
-        fragmentAsset = "shader/noise.frag",
+        name = "simple_quad",
+        vertexSrc = SIMPLE_QUAD_VERT,
+        fragmentSrc = NOISE_FRAG
     ).apply {
         bindUniformBlock(
             SimpleRenderer.TEXTURE_DATA_UBO_BLOCK,

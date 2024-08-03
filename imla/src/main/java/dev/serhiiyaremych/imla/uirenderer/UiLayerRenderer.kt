@@ -7,7 +7,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer
 
-import android.content.res.AssetManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -26,7 +25,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
@@ -63,14 +61,12 @@ internal class UiRendererObserver(
 public fun rememberUiLayerRenderer(downSampleFactor: Int = 2): UiLayerRenderer {
     val density = LocalDensity.current
     val graphicsLayer = rememberGraphicsLayer()
-    val assetManager = LocalContext.current.assets
-    return remember(density, graphicsLayer, assetManager, downSampleFactor) {
+    return remember(density, graphicsLayer, downSampleFactor) {
         UiRendererObserver(
             UiLayerRenderer(
                 density,
                 graphicsLayer,
-                downSampleFactor,
-                assetManager
+                downSampleFactor
             )
         ).uiLayerRenderer
     }
@@ -80,8 +76,7 @@ public fun rememberUiLayerRenderer(downSampleFactor: Int = 2): UiLayerRenderer {
 public class UiLayerRenderer(
     density: Density,
     graphicsLayer: GraphicsLayer,
-    downSampleFactor: Int,
-    private val assetManager: AssetManager
+    downSampleFactor: Int
 ) : Density by density {
     private val renderer2D: Renderer2D = Renderer2D()
     private val simpleRenderer: SimpleRenderer = SimpleRenderer()
@@ -92,11 +87,10 @@ public class UiLayerRenderer(
     }
 
     private val renderingPipeline: RenderingPipeline =
-        RenderingPipeline(assetManager, simpleQuadRenderer, renderer2D, this)
+        RenderingPipeline(simpleQuadRenderer, renderer2D, this)
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
     internal val renderableLayer: RenderableRootLayer = RenderableRootLayer(
-        assetManager = assetManager,
         layerDownsampleFactor = downSampleFactor,
         density = density,
         graphicsLayer = graphicsLayer,

@@ -5,7 +5,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing.mask
 
-import android.content.res.AssetManager
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.IntSize
 import androidx.tracing.trace
@@ -21,11 +20,10 @@ import dev.serhiiyaremych.imla.uirenderer.RenderableScope
 import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
 
 internal class MaskEffect(
-    assetManager: AssetManager,
     private val simpleQuadRenderer: SimpleQuadRenderer
 ) {
 
-    private val shaderProgram = MaskShaderProgram(assetManager)
+    private val shaderProgram = MaskShaderProgram()
 
     private lateinit var cropBackgroundFramebuffer: Framebuffer
     private lateinit var finalMaskFrameBuffer: Framebuffer

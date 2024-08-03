@@ -7,7 +7,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing.blur
 
-import android.content.res.AssetManager
 import androidx.annotation.FloatRange
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
@@ -15,14 +14,16 @@ import dev.romainguy.kotlin.math.Float2
 import dev.romainguy.kotlin.math.Float4
 import dev.serhiiyaremych.imla.renderer.Shader
 import dev.serhiiyaremych.imla.renderer.SimpleRenderer
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_BLUR_FRAG
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.SIMPLE_QUAD_VERT
 import kotlin.properties.Delegates
 
-internal class SimpleBlurShaderProgram(assetManager: AssetManager) {
+internal class SimpleBlurShaderProgram {
 
     val shader: Shader = Shader.create(
-        assetManager = assetManager,
-        vertexAsset = "shader/simple_quad.vert",
-        fragmentAsset = "shader/simple_blur.frag",
+        name = "simple_quad",
+        vertexSrc = SIMPLE_QUAD_VERT,
+        fragmentSrc = SIMPLE_BLUR_FRAG
     ).apply {
         bind()
         setInt("u_Texture", 0)

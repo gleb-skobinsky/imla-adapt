@@ -7,7 +7,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer
 
-import android.content.res.AssetManager
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -19,14 +18,13 @@ import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
 import java.util.concurrent.ConcurrentHashMap
 
 internal class RenderingPipeline(
-    private val assetManager: AssetManager,
     private val simpleRenderer: SimpleQuadRenderer,
     private val renderer2D: Renderer2D,
     private val density: Density
 ) {
     private val masks: MutableMap<String, MaskTextureRenderer> = ConcurrentHashMap()
     private val renderObjects: MutableMap<String, RenderObject> = ConcurrentHashMap()
-    private val effectCoordinator = EffectCoordinator(density, simpleRenderer, assetManager)
+    private val effectCoordinator = EffectCoordinator(density, simpleRenderer)
 
     fun getRenderObject(id: String?): RenderObject? {
         return id?.let { renderObjects[it] }

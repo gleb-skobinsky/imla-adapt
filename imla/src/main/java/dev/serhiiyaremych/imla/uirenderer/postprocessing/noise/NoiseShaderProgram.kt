@@ -5,19 +5,20 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing.noise
 
-import android.content.res.AssetManager
 import dev.serhiiyaremych.imla.renderer.BufferLayout
 import dev.serhiiyaremych.imla.renderer.Shader
 import dev.serhiiyaremych.imla.renderer.ShaderProgram
 import dev.serhiiyaremych.imla.renderer.objects.defaultQuadBufferLayout
 import dev.serhiiyaremych.imla.renderer.objects.defaultQuadVertexMapper
 import dev.serhiiyaremych.imla.renderer.primitive.QuadVertex
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.DEFAULT_QUAD_VERT
+import dev.serhiiyaremych.imla.uirenderer.shaderSources.NOISE_FRAG
 
-internal class NoiseShaderProgram(assetManager: AssetManager) : ShaderProgram {
+internal class NoiseShaderProgram : ShaderProgram {
     override val shader: Shader = Shader.create(
-        assetManager = assetManager,
-        vertexAsset = "shader/default_quad.vert",
-        fragmentAsset = "shader/noise.frag",
+        name = "default_quad",
+        vertexSrc = DEFAULT_QUAD_VERT,
+        fragmentSrc = NOISE_FRAG
     )
     override val vertexBufferLayout: BufferLayout = defaultQuadBufferLayout
     override val componentsCount: Int = vertexBufferLayout.elements.sumOf { it.type.components }

@@ -7,7 +7,6 @@
 
 package dev.serhiiyaremych.imla.uirenderer.postprocessing.blur
 
-import android.content.res.AssetManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.trace
@@ -26,11 +25,10 @@ import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
 import kotlin.properties.Delegates
 
 internal class BlurEffect(
-    assetManager: AssetManager,
     private val simpleRenderer: SimpleQuadRenderer
 ) {
     private val blurShaderProgram: SimpleBlurShaderProgram =
-        SimpleBlurShaderProgram(assetManager)
+        SimpleBlurShaderProgram()
 
     private var extraHPassFramebuffer: Framebuffer by Delegates.notNull()
     private var extraVPassFramebuffer: Framebuffer by Delegates.notNull()
