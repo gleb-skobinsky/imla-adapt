@@ -39,6 +39,9 @@ import dev.serhiiyaremych.imla.renderer.RenderCommand
 import dev.serhiiyaremych.imla.renderer.Renderer2D
 import dev.serhiiyaremych.imla.renderer.SimpleRenderer
 import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class UiRendererObserver(
@@ -100,12 +103,9 @@ public class UiLayerRenderer(
             // graphics layer texture updated, request pipeline render
             renderingPipeline.requestRender {
                 isRendering.set(false)
-                semaphore.release()
             }
         }
     )
-
-    private val semaphore: java.util.concurrent.Semaphore = java.util.concurrent.Semaphore(1)
 
     private val isGLInitialized = AtomicBoolean(false)
 
@@ -117,10 +117,13 @@ public class UiLayerRenderer(
         override fun onDrawFrame(eglManager: EGLManager) {
             // TODO: implement FPS counter
             if (isRendering.compareAndSet(false, true)) {
-//                renderableLayer.updateTex()
+                // withMain { onUiLayerUpdated() }
             }
         }
     }
+
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private fun withMain(block: () -> Unit) = scope.launch { block() }
 
     private val isRendering: AtomicBoolean = AtomicBoolean(false)
     private val isRecording: AtomicBoolean = AtomicBoolean(false)
@@ -194,7 +197,7 @@ public class UiLayerRenderer(
             glRenderer.execute {
                 if (!renderableLayer.isReady && isGLInitialized.get()) {
 //                    mainRenderTarget.requestRender()
-                    mainThreadHandler.post { renderableLayer.updateTex() }
+                    renderableLayer.updateTex()
                 }
             }
         }

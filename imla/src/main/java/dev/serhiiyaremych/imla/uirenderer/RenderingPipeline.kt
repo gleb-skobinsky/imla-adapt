@@ -79,7 +79,7 @@ internal class RenderingPipeline(
         }
 
         var remainingRenders = renderObjectsCount
-        renderObjects.forEach { (_, renderObject) ->
+        for ((_, renderObject) in renderObjects) {
             renderObject.invalidate {
                 if (--remainingRenders == 0) {
                     onRenderComplete()
