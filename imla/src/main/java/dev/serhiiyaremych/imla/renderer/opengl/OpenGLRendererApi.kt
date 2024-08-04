@@ -30,6 +30,7 @@ internal class OpenGLRendererAPI : RendererApi {
         checkGlError(GLES30.glDisable(GLES30.GL_STENCIL_TEST))
         checkGlError(GLES30.glDisable(GLES30.GL_SCISSOR_TEST))
         checkGlError(GLES30.glDisable(GLES30.GL_CULL_FACE))
+        checkGlError(GLES30.glEnable(GLES30.GL_DITHER))
         setClearColor(Color.Transparent)
     }
 

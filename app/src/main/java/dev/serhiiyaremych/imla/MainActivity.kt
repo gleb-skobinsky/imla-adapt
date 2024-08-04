@@ -54,10 +54,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,8 +70,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tracing.trace
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
 import dev.serhiiyaremych.imla.data.ApiClient
 import dev.serhiiyaremych.imla.modifier.blurSource
 import dev.serhiiyaremych.imla.ui.BackdropBlur
@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(
                 android.graphics.Color.TRANSPARENT,
@@ -95,26 +96,22 @@ class MainActivity : ComponentActivity() {
                 android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT
             )
         )
-        launchIdlenessTracking()
+
         setContent {
             ImlaTheme {
                 val uiRenderer = rememberUiLayerRenderer(downSampleFactor = 2)
-                val viewingImage = remember {
-                    mutableStateOf("")
-                }
+                var viewingImage by remember { mutableStateOf("") }
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    val hazeState = remember { HazeState() }
                     // Full height content
                     Surface(
                         Modifier
                             .fillMaxSize()
-                            .blurSource(uiRenderer)
-                            .haze(hazeState),
+                            .blurSource(uiRenderer),
                     ) {
                         Content(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(top = TopAppBarDefaults.MediumAppBarExpandedHeight),
-                            onImageClick = { viewingImage.value = it }
+                            onImageClick = { viewingImage = it }
                         )
                     }
                     val showBottomSheet = remember { mutableStateOf(false) }
@@ -130,7 +127,7 @@ class MainActivity : ComponentActivity() {
                     AnimatedVisibility(
                         modifier = Modifier
                             .matchParentSize(),
-                        visible = viewingImage.value.isNotEmpty(),
+                        visible = viewingImage.isNotEmpty(),
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
@@ -144,10 +141,9 @@ class MainActivity : ComponentActivity() {
                             )
                         ) {
                             SimpleImageViewer(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                imageUrl = viewingImage.value,
-                                onDismiss = { viewingImage.value = "" }
+                                modifier = Modifier.fillMaxSize(),
+                                imageUrl = viewingImage,
+                                onDismiss = { viewingImage = "" }
                             )
                         }
                         DisposableEffect(Unit) {
@@ -324,21 +320,5 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-
-    }
-
-    internal fun ComponentActivity.launchIdlenessTracking() {
-        val contentView: View = findViewById(android.R.id.content)
-        val callback: Choreographer.FrameCallback = object : Choreographer.FrameCallback {
-            override fun doFrame(frameTimeNanos: Long) {
-                if (Recomposer.runningRecomposers.value.any { it.hasPendingWork }) {
-                    contentView.contentDescription = "COMPOSE-BUSY"
-                } else {
-                    contentView.contentDescription = "COMPOSE-IDLE"
-                }
-                Choreographer.getInstance().postFrameCallback(this)
-            }
-        }
-        Choreographer.getInstance().postFrameCallback(callback)
     }
 }
