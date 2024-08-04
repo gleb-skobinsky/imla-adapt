@@ -127,7 +127,7 @@ internal class OpenGLFramebuffer(
             "OpenGL20Framebuffer is incomplete!"
         }
 
-        // switchback to default framebuffer
+        // switch back to default framebuffer
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
     }
 
