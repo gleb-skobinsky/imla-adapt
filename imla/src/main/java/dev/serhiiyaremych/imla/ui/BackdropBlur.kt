@@ -50,10 +50,12 @@ public fun BackdropBlur(
     var contentBoundingBox by remember { mutableStateOf(Rect.Zero) }
     val id = remember { trace("BlurBehindView#id") { UUID.randomUUID().toString() } }
 
-    val topOffset = IntOffset(
-        x = contentBoundingBox.left.toInt(),
-        y = contentBoundingBox.top.toInt()
-    )
+    val getTopOffset = {
+        IntOffset(
+            x = contentBoundingBox.left.toInt(),
+            y = contentBoundingBox.top.toInt()
+        )
+    }
 
     Box(
         modifier = modifier
@@ -88,7 +90,7 @@ public fun BackdropBlur(
                                     id = id,
                                     size = IntSize(width, height),
                                 )
-                                uiLayerRenderer.updateOffset(id, topOffset)
+                                uiLayerRenderer.updateOffset(id, getTopOffset())
                                 uiLayerRenderer.updateStyle(id, style)
                                 uiLayerRenderer.updateMask(id, blurMask)
                             }
@@ -98,28 +100,12 @@ public fun BackdropBlur(
             },
             update = { view ->
                 uiLayerRenderer.updateMask(id, blurMask)
-                uiLayerRenderer.updateOffset(id, topOffset)
+                uiLayerRenderer.updateOffset(id, getTopOffset())
                 trace("BackdropBlurView#renderObject.style") {
                     uiLayerRenderer.updateStyle(id, style)
                 }
             }
         )
-
-        /*
-        AndroidExternalSurface(
-
-            surfaceSize = contentBoundingBox.size.toIntSize(),
-        ) {
-            onSurface { surface, w, h ->
-                surface.onChanged { _, _ ->
-                    // todo
-                }
-                surface.onDestroyed {
-                    uiLayerRenderer.detachRenderObject(id)
-                }
-            }
-        }
-         */
 
         // Render the content and handle offset changes
         content()
