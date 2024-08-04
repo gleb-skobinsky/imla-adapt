@@ -20,7 +20,6 @@ import dev.serhiiyaremych.imla.renderer.FramebufferTextureSpecification
 import dev.serhiiyaremych.imla.renderer.Texture
 import dev.serhiiyaremych.imla.renderer.Texture2D
 import dev.serhiiyaremych.imla.renderer.opengl.OpenGLTexture2D
-import dev.serhiiyaremych.imla.renderer.opengl.toGlInternalFormat
 import dev.serhiiyaremych.imla.renderer.opengl.toGlTextureTarget
 import dev.serhiiyaremych.imla.renderer.toIntBuffer
 
@@ -113,7 +112,7 @@ internal class OpenGLFramebuffer(
         }
 
         if (colorAttachmentSpecs.isNotEmpty()) {
-            val buffers: IntArray = IntArray(colorAttachmentSpecs.size) {
+            val buffers = IntArray(colorAttachmentSpecs.size) {
                 GLES30.GL_COLOR_ATTACHMENT0 + it
             }
             GLES30.glDrawBuffers(colorAttachmentSpecs.size, buffers, 0)
