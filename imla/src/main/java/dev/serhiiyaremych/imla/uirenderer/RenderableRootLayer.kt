@@ -45,7 +45,7 @@ internal class RenderableRootLayer(
     private val onLayerTextureUpdated: () -> Unit
 ) {
     val sizeInt: IntSize get() = graphicsLayer.size
-    val sizeDec: Size get() = sizeInt.toSize()
+    private val sizeDec: Size get() = sizeInt.toSize()
     val lowResTexture: Texture2D
         get() = lowResFBO.colorAttachmentTexture
     val scale: Float

@@ -13,11 +13,12 @@ import android.util.Log
 import android.view.Surface
 import androidx.annotation.MainThread
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -109,7 +110,8 @@ public class UiLayerRenderer(
 
     private val isGLInitialized = AtomicBoolean(false)
 
-    public val isInitialized: MutableState<Boolean> = mutableStateOf(false)
+    public var isInitialized: Boolean by mutableStateOf(false)
+        private set
 
     private lateinit var mainRenderTarget: GLRenderer.RenderTarget
 
@@ -153,7 +155,7 @@ public class UiLayerRenderer(
                 )
                 if (isGLInitialized.compareAndSet(false, true)) {
                     Snapshot.withMutableSnapshot {
-                        isInitialized.value = true
+                        isInitialized = true
                     }
                 }
             }
@@ -239,10 +241,10 @@ public class UiLayerRenderer(
     }
 
     public fun destroy() {
-        if (isInitialized.value) {
+        if (isInitialized) {
             isRendering.set(false)
             isRecording.set(false)
-            isInitialized.value = false
+            isInitialized = false
             glRenderer.stop(true)
             renderableLayer.destroy()
             renderingPipeline.destroy()

@@ -5,17 +5,18 @@
 
 package dev.serhiiyaremych.imla.ui
 
-import android.view.Surface
+import android.graphics.PixelFormat
+import android.view.SurfaceView
 import androidx.compose.foundation.AndroidExternalSurface
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Rect
@@ -31,11 +32,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.toIntSize
 import androidx.compose.ui.util.trace
+import androidx.compose.ui.viewinterop.AndroidView
 import dev.serhiiyaremych.imla.uirenderer.Style
 import dev.serhiiyaremych.imla.uirenderer.UiLayerRenderer
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
@@ -47,23 +48,26 @@ public fun BackdropBlur(
     clipShape: Shape = RectangleShape,
     content: @Composable BoxScope.() -> Unit = {}
 ) {
-    val contentBoundingBoxState = remember { mutableStateOf(Rect.Zero) }
+    val coroutineScope = rememberCoroutineScope()
+    var contentBoundingBox by remember { mutableStateOf(Rect.Zero) }
     val id = remember { trace("BlurBehindView#id") { UUID.randomUUID().toString() } }
 
-    val drawingSurfaceState = remember { mutableStateOf<Surface?>(null) }
-    val drawingSurfaceSizeState = remember { mutableStateOf(IntSize.Zero) }
     val contentOffset = remember { mutableStateOf(IntOffset.Zero) }
+
+    val topOffset = IntOffset(
+        x = contentBoundingBox.left.toInt(),
+        y = contentBoundingBox.top.toInt()
+    )
 
     Box(
         modifier = modifier
             .onPlaced { layoutCoordinates ->
-                contentBoundingBoxState.value = layoutCoordinates.boundsInParent()
+                contentBoundingBox = layoutCoordinates.boundsInParent()
             }
     ) {
-        val contentBoundingBox = contentBoundingBoxState.value
         val clipPath = remember { Path() }
         // Render the external surface
-        AndroidExternalSurface(
+        AndroidView(
             modifier = Modifier
                 .matchParentSize()
                 .drawWithCache {
@@ -76,47 +80,46 @@ public fun BackdropBlur(
                         }
                     }
                 },
+            factory = { context ->
+                SurfaceView(context).apply {
+                    holder.setFormat(PixelFormat.TRANSLUCENT)
+                    coroutineScope.launch {
+                        snapshotFlow { uiLayerRenderer.isInitialized }
+                            .filter { it }
+                            .collect {
+                                uiLayerRenderer.attachRendererSurface(
+                                    surface = holder.surface,
+                                    id = id,
+                                    size = IntSize(width, height),
+                                )
+                                uiLayerRenderer.updateOffset(id, topOffset + contentOffset.value)
+                                uiLayerRenderer.updateStyle(id, style)
+                                uiLayerRenderer.updateMask(id, blurMask)
+                            }
+
+                    }
+                }
+            },
+            update = { view ->
+
+            }
+        )
+
+        /*
+        AndroidExternalSurface(
+
             surfaceSize = contentBoundingBox.size.toIntSize(),
         ) {
             onSurface { surface, w, h ->
-                Snapshot.withMutableSnapshot {
-                    drawingSurfaceState.value = surface
-                    drawingSurfaceSizeState.value = IntSize(w, h)
-                }
                 surface.onChanged { _, _ ->
                     // todo
                 }
                 surface.onDestroyed {
                     uiLayerRenderer.detachRenderObject(id)
-                    drawingSurfaceState.value = null
                 }
             }
         }
-
-        val isRendererInitialized by uiLayerRenderer.isInitialized
-
-        val topOffset = IntOffset(
-            x = contentBoundingBox.left.toInt(),
-            y = contentBoundingBox.top.toInt()
-        )
-        LaunchedEffect(id, drawingSurfaceState, uiLayerRenderer, contentBoundingBox) {
-            val rendererFlow = snapshotFlow { isRendererInitialized }
-            val surfaceFlow = snapshotFlow { drawingSurfaceState.value }
-            combine(rendererFlow, surfaceFlow) { a, b -> a to b }
-                .filter { it.first && it.second != null }
-                .distinctUntilChanged()
-                .collect {
-                    uiLayerRenderer.attachRendererSurface(
-                        surface = it.second,
-                        id = id,
-                        size = drawingSurfaceSizeState.value,
-                    )
-                    uiLayerRenderer.updateOffset(id, topOffset + contentOffset.value)
-                    uiLayerRenderer.updateStyle(id, style)
-                    uiLayerRenderer.updateMask(id, blurMask)
-                }
-        }
-
+         */
 
         uiLayerRenderer.updateMask(id, blurMask)
         uiLayerRenderer.updateOffset(id, topOffset + contentOffset.value)
