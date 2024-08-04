@@ -19,6 +19,7 @@ import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.ObserverModifierNode
 import androidx.compose.ui.node.currentValueOf
 import androidx.compose.ui.node.observeReads
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.platform.LocalView
 import dev.serhiiyaremych.imla.ext.logd
 import dev.serhiiyaremych.imla.uirenderer.UiLayerRenderer
@@ -93,12 +94,14 @@ internal class ImlaSourceElement(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ImlaSourceElement
-
-        return uiLayerRenderer == other.uiLayerRenderer
+        return uiLayerRenderer == (other as? ImlaSourceElement)?.uiLayerRenderer
     }
 
     override fun hashCode(): Int {
         return uiLayerRenderer.hashCode()
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        properties["uiLayerRenderer"] = uiLayerRenderer
     }
 }

@@ -7,6 +7,7 @@ package dev.serhiiyaremych.imla.ui
 
 import android.view.Surface
 import androidx.compose.foundation.AndroidExternalSurface
+import androidx.compose.foundation.AndroidExternalSurfaceZOrder
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -45,7 +46,7 @@ public fun BackdropBlur(
     uiLayerRenderer: UiLayerRenderer,
     blurMask: Brush? = null,
     clipShape: Shape = RectangleShape,
-    content: @Composable BoxScope.(onOffsetChanged: (IntOffset) -> Unit) -> Unit = {}
+    content: @Composable BoxScope.() -> Unit = {}
 ) {
     val contentBoundingBoxState = remember { mutableStateOf(Rect.Zero) }
     val id = remember { trace("BlurBehindView#id") { UUID.randomUUID().toString() } }
@@ -125,8 +126,6 @@ public fun BackdropBlur(
         }
 
         // Render the content and handle offset changes
-        content { offset ->
-            contentOffset.value = offset
-        }
+        content()
     }
 }

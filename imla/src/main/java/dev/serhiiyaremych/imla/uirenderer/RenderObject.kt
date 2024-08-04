@@ -144,14 +144,13 @@ internal class RenderObject internal constructor(
             rect: Rect,
         ): RenderObject {
             val scaledTexture = renderableLayer.lowResTexture
-            val region = rect
             val scaledRegion = Matrix().apply {
                 scale(renderableLayer.scale, renderableLayer.scale)
-            }.map(region)
+            }.map(rect)
 
             val renderObject = RenderObject(
                 id = id,
-                highResRect = region,
+                highResRect = rect,
                 lowResRect = scaledRegion,
                 highResFBO = renderableLayer.highResFBO,
                 lowResLayer = SubTexture2D.createFromCoords(
@@ -160,7 +159,7 @@ internal class RenderObject internal constructor(
                 ),
                 renderableScope = RenderableScope(
                     scale = renderableLayer.scale,
-                    originalSizeInt = region.size.toIntSize(),
+                    originalSizeInt = rect.size.toIntSize(),
                     renderer = renderableLayer.renderer2D
                 ),
             ).apply {

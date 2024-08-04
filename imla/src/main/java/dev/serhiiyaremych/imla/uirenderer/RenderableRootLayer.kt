@@ -52,7 +52,7 @@ internal class RenderableRootLayer(
         get() = 1.0f / layerDownsampleFactor
 
     val isReady: Boolean
-        get() = sizeInt == IntSize.Zero
+        get() = sizeInt != IntSize.Zero
 
     private lateinit var renderableScope: RenderableScope
     private val drawingScope: CanvasDrawScope = CanvasDrawScope()
@@ -71,7 +71,7 @@ internal class RenderableRootLayer(
 
     fun initialize() {
         require(!isDestroyed) { "Can't re-init destroyed layer" }
-        if (!isReady) {
+        if (isReady) {
             trace("RenderableRootLayer#initialize") {
                 renderableScope =
                     RenderableScope(scale = scale, originalSizeInt = sizeInt, renderer = renderer2D)

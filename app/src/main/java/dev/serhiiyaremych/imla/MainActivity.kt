@@ -147,7 +147,8 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxSize(),
                                 imageUrl = viewingImage.value,
-                                onDismiss = { viewingImage.value = "" })
+                                onDismiss = { viewingImage.value = "" }
+                            )
                         }
                         DisposableEffect(Unit) {
                             onDispose { uiRenderer.onUiLayerUpdated() }
