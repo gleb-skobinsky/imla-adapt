@@ -7,7 +7,6 @@ package dev.serhiiyaremych.imla.ui
 
 import android.graphics.PixelFormat
 import android.view.SurfaceView
-import androidx.compose.foundation.AndroidExternalSurface
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.toIntSize
 import androidx.compose.ui.util.trace
 import androidx.compose.ui.viewinterop.AndroidView
 import dev.serhiiyaremych.imla.uirenderer.Style
