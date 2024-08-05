@@ -1,7 +1,6 @@
 package dev.serhiiyaremych.imla.ui
 
 import android.graphics.PixelFormat
-import android.opengl.GLSurfaceView
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView

@@ -28,7 +28,6 @@ import dev.serhiiyaremych.imla.renderer.Texture2D
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.properties.Delegates
 
 public class RenderObject internal constructor(
     internal val id: String,
@@ -84,30 +83,31 @@ public class RenderObject internal constructor(
         this.renderCallback = onRender
     }
 
-    public fun updateOffset(offset: IntOffset, onRenderComplete: () -> Unit): Unit = trace("RenderObject#updateOffset") {
-        val (x, y) = offset
-        val scaledTranslateY =
-            lowResLayer.texture.height - (y * renderableScope.scale) - lowResRect.height
-        val scaledRect = lowResRect.translate(
-            translateX = x.toFloat() * renderableScope.scale,
-            translateY = scaledTranslateY
-        )
-        // todo: update coordinates in place
-        lowResLayer = SubTexture2D.createFromCoords(
-            texture = lowResLayer.texture,
-            rect = scaledRect
-        )
+    public fun updateOffset(offset: IntOffset, onRenderComplete: () -> Unit): Unit =
+        trace("RenderObject#updateOffset") {
+            val (x, y) = offset
+            val scaledTranslateY =
+                lowResLayer.texture.height - (y * renderableScope.scale) - lowResRect.height
+            val scaledRect = lowResRect.translate(
+                translateX = x.toFloat() * renderableScope.scale,
+                translateY = scaledTranslateY
+            )
+            // todo: update coordinates in place
+            lowResLayer = SubTexture2D.createFromCoords(
+                texture = lowResLayer.texture,
+                rect = scaledRect
+            )
 
-        val rect = highResRect.translate(
-            translateX = x.toFloat(),
-            translateY = y.toFloat()
-        )
-        highResRect = rect
+            val rect = highResRect.translate(
+                translateX = x.toFloat(),
+                translateY = y.toFloat()
+            )
+            highResRect = rect
 
-        invalidate {
-            onRenderComplete()
+            invalidate {
+                onRenderComplete()
+            }
         }
-    }
 
     override fun toString(): String {
         return "RenderObject(id='$id', rect='$highResRect', layer='${lowResLayer.id}, ${lowResLayer.subTextureSize}')"
