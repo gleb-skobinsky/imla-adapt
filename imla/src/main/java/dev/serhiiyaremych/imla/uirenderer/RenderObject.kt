@@ -12,6 +12,9 @@ import android.hardware.HardwareBuffer
 import android.media.ImageReader
 import android.os.Build
 import android.view.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.unit.IntOffset
@@ -22,9 +25,12 @@ import androidx.graphics.opengl.egl.EGLManager
 import dev.serhiiyaremych.imla.renderer.Framebuffer
 import dev.serhiiyaremych.imla.renderer.SubTexture2D
 import dev.serhiiyaremych.imla.renderer.Texture2D
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
 
-internal class RenderObject internal constructor(
+public class RenderObject internal constructor(
     internal val id: String,
     internal var highResRect: Rect,
     internal val lowResRect: Rect,
@@ -42,25 +48,43 @@ internal class RenderObject internal constructor(
         }
     }
 
-    internal var style: Style by Delegates.observable(Style.default) { _, old, new ->
-        if (old != new) {
-            invalidate()
+    private val scope = CoroutineScope(Dispatchers.Main)
+
+    public var renderedAtLeastOnce: Boolean by mutableStateOf(false)
+        private set
+
+    public fun setRendered(rendered: Boolean) {
+        scope.launch {
+            renderedAtLeastOnce = rendered
+        }
+    }
+
+    internal var style: Style = Style.default
+
+    internal fun updateStyle(newStyle: Style, onRenderComplete: () -> Unit) {
+        if (style == newStyle) {
+            onRenderComplete()
+            return
+        }
+        style = newStyle
+        invalidate {
+            onRenderComplete()
         }
     }
 
     internal var mask: Texture2D? = null
 
-    var renderTarget: GLRenderer.RenderTarget? = null
+    public var renderTarget: GLRenderer.RenderTarget? = null
 
-    fun invalidate(onRenderComplete: ((GLRenderer.RenderTarget) -> Unit)? = null) {
+    public fun invalidate(onRenderComplete: (GLRenderer.RenderTarget) -> Unit) {
         renderTarget?.requestRender(onRenderComplete)
     }
 
-    fun setRenderCallback(onRender: ((RenderObject) -> Unit)?) {
+    public fun setRenderCallback(onRender: ((RenderObject) -> Unit)?) {
         this.renderCallback = onRender
     }
 
-    fun updateOffset(offset: IntOffset) = trace("RenderObject#updateOffset") {
+    public fun updateOffset(offset: IntOffset, onRenderComplete: () -> Unit): Unit = trace("RenderObject#updateOffset") {
         val (x, y) = offset
         val scaledTranslateY =
             lowResLayer.texture.height - (y * renderableScope.scale) - lowResRect.height
@@ -80,7 +104,9 @@ internal class RenderObject internal constructor(
         )
         highResRect = rect
 
-        invalidate()
+        invalidate {
+            onRenderComplete()
+        }
     }
 
     override fun toString(): String {
@@ -88,7 +114,7 @@ internal class RenderObject internal constructor(
     }
 
 
-    fun detachFromRenderer() {
+    public fun detachFromRenderer() {
         renderTarget?.detach(true)
     }
 
@@ -113,7 +139,7 @@ internal class RenderObject internal constructor(
     }
 
 
-    companion object {
+    public companion object {
 
         private fun createImageReader(width: Int, height: Int): ImageReader {
             val maxImages = 2
@@ -136,7 +162,7 @@ internal class RenderObject internal constructor(
             }
         }
 
-        fun createFromSurface(
+        internal fun createFromSurface(
             id: String,
             renderableLayer: RenderableRootLayer,
             glRenderer: GLRenderer,

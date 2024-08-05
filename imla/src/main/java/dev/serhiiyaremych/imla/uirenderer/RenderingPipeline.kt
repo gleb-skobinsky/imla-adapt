@@ -34,9 +34,9 @@ internal class RenderingPipeline(
         renderObjects[renderObject.id] = renderObject.apply { setRenderCallback(renderCallback) }
     }
 
-    fun updateMask(glRenderer: GLRenderer, renderObjectId: String?, mask: Brush?) {
+    fun updateMask(glRenderer: GLRenderer, renderObjectId: String?, mask: Brush?, onRenderComplete: () -> Unit) {
         val renderObject = renderObjectId?.let { renderObjects[it] }
-        if (renderObject != null) {
+        renderObject?.let {
             val maskRenderer = masks.getOrPut(renderObject.id) {
                 MaskTextureRenderer(
                     density = density,
@@ -44,7 +44,9 @@ internal class RenderingPipeline(
                     simpleQuadRenderer = simpleRenderer,
                     onRenderComplete = { tex ->
                         renderObject.mask = tex
-                        renderObject.invalidate()
+                        renderObject.invalidate {
+                            onRenderComplete()
+                        }
                     }
                 )
             }
@@ -60,7 +62,9 @@ internal class RenderingPipeline(
             } else {
                 maskRenderer.releaseCurrentMask()
                 renderObject.mask = null
-                renderObject.invalidate()
+                renderObject.invalidate {
+                    onRenderComplete()
+                }
             }
         }
     }

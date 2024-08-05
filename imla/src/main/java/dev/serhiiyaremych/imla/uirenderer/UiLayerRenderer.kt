@@ -40,9 +40,6 @@ import dev.serhiiyaremych.imla.renderer.RenderCommand
 import dev.serhiiyaremych.imla.renderer.Renderer2D
 import dev.serhiiyaremych.imla.renderer.SimpleRenderer
 import dev.serhiiyaremych.imla.uirenderer.postprocessing.SimpleQuadRenderer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class UiRendererObserver(
@@ -123,9 +120,6 @@ public class UiLayerRenderer(
             }
         }
     }
-
-    private val scope = CoroutineScope(Dispatchers.Main)
-    private fun withMain(block: () -> Unit) = scope.launch { block() }
 
     private val isRendering: AtomicBoolean = AtomicBoolean(false)
     private val isRecording: AtomicBoolean = AtomicBoolean(false)
@@ -251,18 +245,24 @@ public class UiLayerRenderer(
         }
     }
 
-    internal fun updateOffset(renderObjectId: String?, offset: IntOffset) {
+    internal fun updateOffset(
+        renderObjectId: String?,
+        offset: IntOffset,
+        onRenderComplete: () -> Unit
+    ) {
         renderingPipeline
             .getRenderObject(renderObjectId)
-            ?.updateOffset(offset = offset)
+            ?.updateOffset(offset = offset, onRenderComplete = onRenderComplete)
     }
 
-    internal fun updateStyle(renderObjectId: String?, style: Style) {
-        renderingPipeline.getRenderObject(renderObjectId)?.style = style
+    internal fun updateStyle(renderObjectId: String?, style: Style, onRenderComplete: () -> Unit) {
+        renderingPipeline
+            .getRenderObject(renderObjectId)
+            ?.updateStyle(style, onRenderComplete) ?: onRenderComplete()
     }
 
-    internal fun updateMask(renderObjectId: String?, brush: Brush?) {
-        renderingPipeline.updateMask(glRenderer, renderObjectId, brush)
+    internal fun updateMask(renderObjectId: String?, brush: Brush?, onRenderComplete: () -> Unit) {
+        renderingPipeline.updateMask(glRenderer, renderObjectId, brush, onRenderComplete)
     }
 
     internal companion object {

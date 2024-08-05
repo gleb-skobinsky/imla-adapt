@@ -151,26 +151,12 @@ class MainActivity : ComponentActivity() {
                     if (showBottomSheet.value) {
                         val sheetState = rememberModalBottomSheetState()
 
-                        val blur = remember {
-                            mutableIntStateOf(1)
-                        }
                         val sheetHeight = remember {
                             mutableIntStateOf(0)
                         }
                         val noiseAlpha = remember {
                             mutableFloatStateOf(0.1f)
                         }
-                        BackdropBlur(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .zIndex(2f),
-                            style = Style(
-                                blurRadius = blur.intValue.dp,
-                                tint = Color.Transparent,
-                                noiseAlpha = noiseAlpha.floatValue
-                            ),
-                            uiLayerRenderer = uiRenderer
-                        )
 
                         ModalBottomSheet(
                             modifier = Modifier
@@ -181,37 +167,38 @@ class MainActivity : ComponentActivity() {
                             onDismissRequest = { showBottomSheet.value = false },
                             containerColor = Color.White.copy(alpha = 0.4f)
                         ) {
-                            Column(
-                                Modifier
+                            BackdropBlur(
+                                modifier = Modifier
                                     .fillMaxSize()
-                                    .safeGesturesPadding(),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    .zIndex(2f),
+                                style = Style(
+                                    blurRadius = 10.dp,
+                                    tint = Color.Transparent,
+                                    noiseAlpha = noiseAlpha.floatValue
+                                ),
+                                uiLayerRenderer = uiRenderer
                             ) {
-                                Text("Blur Settings")
-                                Spacer(Modifier.height(16.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("Noise")
-                                    Spacer(Modifier.width(16.dp))
-                                    Slider(
-                                        noiseAlpha.floatValue,
-                                        onValueChange = { noiseAlpha.floatValue = it },
-                                        valueRange = 0.0f..1.0f
-                                    )
+                                Column(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .safeGesturesPadding(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text("Blur Settings")
+                                    Spacer(Modifier.height(16.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text("Noise")
+                                        Spacer(Modifier.width(16.dp))
+                                        Slider(
+                                            noiseAlpha.floatValue,
+                                            onValueChange = { noiseAlpha.floatValue = it },
+                                            valueRange = 0.0f..1.0f
+                                        )
+                                    }
                                 }
                             }
-
-                        }
-                        LaunchedEffect(sheetState) {
-                            snapshotFlow { sheetState.requireOffset() }
-                                .distinctUntilChanged()
-                                .collect {
-                                    val expandFraction = 1.0f - (it / sheetHeight.intValue)
-                                    blur.intValue =
-                                        (32f * expandFraction).roundToInt().coerceAtLeast(1)
-                                }
                         }
                     }
-
                 }
             }
         }
@@ -272,6 +259,7 @@ class MainActivity : ComponentActivity() {
         BackdropBlur(
             modifier = Modifier.requiredHeight(250.dp),
             uiLayerRenderer = uiRenderer,
+            /*
             blurMask = Brush.verticalGradient(
                 colors = listOf(
                     Color.White.copy(alpha = 1.0f),
@@ -281,6 +269,8 @@ class MainActivity : ComponentActivity() {
                     Color.White.copy(alpha = 0.0f),
                 ),
             ),
+
+             */
             style = Style(
                 blurRadius = 8.dp,
                 noiseAlpha = 0.0f,

@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -45,26 +47,30 @@ public fun BackdropBlur(
     clipShape: Shape = RectangleShape,
     content: @Composable BoxScope.() -> Unit = {}
 ) {
-    var contentBoundingBox by remember { mutableStateOf(Rect.Zero) }
+    var contentRect by remember { mutableStateOf(Rect.Zero) }
     val id = rememberNewId()
 
     val getTopOffset = {
         IntOffset(
-            x = contentBoundingBox.left.toInt(),
-            y = contentBoundingBox.top.toInt()
+            x = contentRect.left.toInt(),
+            y = contentRect.top.toInt()
         )
     }
 
+    val updateOffsetComplete = remember { mutableStateOf(false) }
+    val updateMaskComplete = remember { mutableStateOf(false) }
+    val updateStyleComplete = remember { mutableStateOf(false) }
+    val allComplete =
+        updateOffsetComplete.value && updateMaskComplete.value && updateStyleComplete.value
+
     Box(
-        modifier = modifier
-            .onPlaced { layoutCoordinates ->
-                contentBoundingBox = layoutCoordinates.boundsInParent()
-            }
+        modifier = modifier.onPlaced { contentRect = it.boundsInRoot() }
     ) {
         // Render the external surface
         ImlaExternalSurface(
-            modifier = Modifier.clipToShape(clipShape),
-            isOpaque = false,
+            modifier = Modifier
+                .isVisible(allComplete)
+                .clipToShape(clipShape),
             onUpdate = { surface ->
                 if (uiLayerRenderer.isInitialized) {
                     uiLayerRenderer.attachRendererSurface(
@@ -73,14 +79,19 @@ public fun BackdropBlur(
                         size = IntSize(width, height),
                     )
                 }
-                uiLayerRenderer.updateOffset(id, getTopOffset())
-                uiLayerRenderer.updateStyle(id, style)
-                uiLayerRenderer.updateMask(id, blurMask)
+                uiLayerRenderer.updateOffset(id, getTopOffset()) {
+                    updateOffsetComplete.value = true
+                }
+                uiLayerRenderer.updateStyle(id, style) {
+                    updateStyleComplete.value = true
+                }
+                uiLayerRenderer.updateMask(id, blurMask) {
+                    updateMaskComplete.value = true
+                }
             },
-            surfaceSize = contentBoundingBox.size.toIntSize(),
+            surfaceSize = contentRect.size.toIntSize(),
         ) {
             onSurface { surface, _, _ ->
-                //surfaceReference = surface
                 surface.onDestroyed {
                     uiLayerRenderer.detachRenderObject(id)
                 }
@@ -106,3 +117,5 @@ private fun Modifier.clipToShape(shape: Shape) = this
             }
         }
     }
+
+private fun Modifier.isVisible(condition: Boolean) = this.alpha(if (condition) 1f else 0f)
