@@ -56,11 +56,13 @@ public fun BackdropBlur(
         )
     }
 
-    val updateOffsetComplete = remember { mutableStateOf(false) }
-    val updateMaskComplete = remember { mutableStateOf(false) }
-    val updateStyleComplete = remember { mutableStateOf(false) }
+    var updateOffsetComplete by remember { mutableStateOf(false) }
+    var updateMaskComplete by remember { mutableStateOf(false) }
+    var updateStyleComplete by remember { mutableStateOf(false) }
     val allComplete =
-        updateOffsetComplete.value && updateMaskComplete.value && updateStyleComplete.value
+        updateOffsetComplete && updateMaskComplete && updateStyleComplete
+
+    var attachedToSurface = remember { false }
 
     Box(
         modifier = modifier.onPlaced { contentRect = it.boundsInRoot() }
@@ -71,21 +73,22 @@ public fun BackdropBlur(
                 .isVisible(allComplete)
                 .clipToShape(clipShape),
             onUpdate = { surface ->
-                if (uiLayerRenderer.isInitialized) {
+                if (uiLayerRenderer.isInitialized && !attachedToSurface) {
                     uiLayerRenderer.attachRendererSurface(
                         surface = surface,
                         id = id,
                         size = IntSize(width, height),
                     )
+                    attachedToSurface = true
                 }
                 uiLayerRenderer.updateOffset(id, getTopOffset()) {
-                    updateOffsetComplete.value = true
+                    updateOffsetComplete = true
                 }
                 uiLayerRenderer.updateStyle(id, style) {
-                    updateStyleComplete.value = true
+                    updateStyleComplete = true
                 }
                 uiLayerRenderer.updateMask(id, blurMask) {
-                    updateMaskComplete.value = true
+                    updateMaskComplete = true
                 }
             },
             surfaceSize = contentRect.size.toIntSize(),
