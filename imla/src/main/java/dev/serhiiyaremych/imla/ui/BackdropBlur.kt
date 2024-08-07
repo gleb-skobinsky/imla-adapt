@@ -44,7 +44,7 @@ public fun BackdropBlur(
     uiLayerRenderer: UiLayerRenderer,
     blurMask: Brush? = null,
     clipShape: Shape = RectangleShape,
-    content: @Composable BoxScope.() -> Unit = {}
+    content: @Composable BoxScope.() -> Unit
 ) {
     var contentRect by remember { mutableStateOf(Rect.Zero) }
     val id = rememberNewId()
@@ -106,7 +106,9 @@ public fun BackdropBlur(
 }
 
 context(BoxScope)
-private fun Modifier.clipToShape(shape: Shape) = this
+private fun Modifier.clipToShape(
+    shape: Shape
+) = this
     .matchParentSize()
     .drawWithCache {
         val clipPath = Path()

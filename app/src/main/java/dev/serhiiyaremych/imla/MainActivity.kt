@@ -25,11 +25,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.safeGesturesPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -52,15 +54,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tracing.trace
@@ -106,15 +112,22 @@ class MainActivity : ComponentActivity() {
                             onImageClick = { viewingImage = it }
                         )
                     }
-                    val showBottomSheet = remember { mutableStateOf(false) }
+                    var showBottomSheet by remember { mutableStateOf(false) }
+                    var showDialog by remember { mutableStateOf(false) }
                     Column(modifier = Modifier.matchParentSize()) {
                         // Layer 0 above full height content
                         BlurryTopAppBar(uiRenderer)
                         Spacer(modifier = Modifier.weight(1f))
                         // Layer 1 full height content
-                        BlurryBottomNavBar(uiRenderer) {
-                            showBottomSheet.value = true
-                        }
+                        BlurryBottomNavBar(
+                            uiRenderer = uiRenderer,
+                            onShowDialog = {
+                                showDialog = true
+                            },
+                            onShowSettings = {
+                                showBottomSheet = true
+                            }
+                        )
                     }
                     AnimatedVisibility(
                         modifier = Modifier
@@ -143,57 +156,99 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    if (showBottomSheet.value) {
-                        val sheetState = rememberModalBottomSheetState()
-
-                        val sheetHeight = remember {
-                            mutableIntStateOf(0)
-                        }
-                        val noiseAlpha = remember {
-                            mutableFloatStateOf(0.1f)
-                        }
-
-                        ModalBottomSheet(
-                            modifier = Modifier
-                                .statusBarsPadding()
-                                .onSizeChanged { sheetHeight.intValue = it.height },
-                            sheetState = sheetState,
-                            scrimColor = Color.Transparent,
-                            onDismissRequest = { showBottomSheet.value = false },
-                            containerColor = Color.White.copy(alpha = 0.4f)
-                        ) {
-                            BackdropBlur(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .zIndex(2f),
-                                style = Style(
-                                    blurRadius = 10.dp,
-                                    tint = Color.Transparent,
-                                    noiseAlpha = noiseAlpha.floatValue
-                                ),
-                                uiLayerRenderer = uiRenderer
-                            ) {
-                                Column(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .safeGesturesPadding(),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text("Blur Settings")
-                                    Spacer(Modifier.height(16.dp))
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text("Noise")
-                                        Spacer(Modifier.width(16.dp))
-                                        Slider(
-                                            noiseAlpha.floatValue,
-                                            onValueChange = { noiseAlpha.floatValue = it },
-                                            valueRange = 0.0f..1.0f
-                                        )
-                                    }
-                                }
+                    if (showBottomSheet) {
+                        BlurredBottomSheet(
+                            uiRenderer = uiRenderer,
+                            setBottomSheet = {
+                                showBottomSheet = it
                             }
+                        )
+                    }
+
+                    if (showDialog) {
+                        BackdropBlur(
+                            modifier = Modifier.align(Alignment.Center).size(200.dp, 100.dp),
+                            uiLayerRenderer = uiRenderer,
+                            style = Style(blurRadius = 10.dp),
+                            clipShape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "Test text",
+                                modifier = Modifier.align(Alignment.Center),
+                                fontSize = 20.sp
+                            )
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun BlurredBottomSheet(
+        uiRenderer: UiLayerRenderer,
+        setBottomSheet: (Boolean) -> Unit
+    ) {
+        val noiseAlpha = remember {
+            mutableFloatStateOf(0.1f)
+        }
+        val sheetState = rememberModalBottomSheetState()
+        var contentRect by remember { mutableStateOf(Rect.Zero) }
+
+        BackdropBlur(
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(2f)
+                .drawWithCache {
+                    onDrawWithContent {
+                        clipRect(
+                            left = contentRect.left,
+                            top = contentRect.top,
+                            right = contentRect.right,
+                            bottom = contentRect.bottom
+                        ) {
+                            this@onDrawWithContent.drawContent()
+                        }
+                    }
+                },
+            style = Style(
+                blurRadius = 10.dp,
+                tint = Color.Transparent,
+                noiseAlpha = noiseAlpha.floatValue
+            ),
+            uiLayerRenderer = uiRenderer
+        ) {
+            Box(Modifier.fillMaxSize())
+        }
+
+        ModalBottomSheet(
+            modifier = Modifier
+                .statusBarsPadding(),
+            sheetState = sheetState,
+            scrimColor = Color.Transparent,
+            onDismissRequest = {
+                setBottomSheet(false)
+            },
+            containerColor = Color.White.copy(alpha = 0.4f)
+        ) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .safeGesturesPadding()
+                    .onPlaced { contentRect = it.boundsInRoot() },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Blur Settings")
+                Spacer(Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Noise")
+                    Spacer(Modifier.width(16.dp))
+                    Slider(
+                        noiseAlpha.floatValue,
+                        onValueChange = { noiseAlpha.floatValue = it },
+                        valueRange = 0.0f..1.0f
+                    )
                 }
             }
         }
@@ -202,6 +257,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun BlurryBottomNavBar(
         uiRenderer: UiLayerRenderer,
+        onShowDialog: () -> Unit,
         onShowSettings: () -> Unit
     ) {
 
@@ -233,7 +289,7 @@ class MainActivity : ComponentActivity() {
                         imageVector = Icons.Filled.Search, contentDescription = null
                     )
                 })
-                NavigationBarItem(selected = false, onClick = { /*TODO*/ }, icon = {
+                NavigationBarItem(selected = false, onClick = onShowDialog, icon = {
                     Icon(
                         imageVector = Icons.Filled.Notifications, contentDescription = null
                     )
@@ -252,7 +308,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     private fun BlurryTopAppBar(uiRenderer: UiLayerRenderer) {
         BackdropBlur(
-            modifier = Modifier.requiredHeight(250.dp),
+            modifier = Modifier.requiredHeight(100.dp),
             uiLayerRenderer = uiRenderer,
             /*
             blurMask = Brush.verticalGradient(
@@ -267,7 +323,7 @@ class MainActivity : ComponentActivity() {
 
              */
             style = Style(
-                blurRadius = 8.dp,
+                blurRadius = 2.dp,
                 noiseAlpha = 0.0f,
                 tint = Color.White.copy(alpha = 0.05f),
             )

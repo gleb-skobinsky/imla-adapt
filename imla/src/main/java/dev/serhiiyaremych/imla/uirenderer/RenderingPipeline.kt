@@ -34,7 +34,12 @@ internal class RenderingPipeline(
         renderObjects[renderObject.id] = renderObject.apply { setRenderCallback(renderCallback) }
     }
 
-    fun updateMask(glRenderer: GLRenderer, renderObjectId: String?, mask: Brush?, onRenderComplete: () -> Unit) {
+    fun updateMask(
+        glRenderer: GLRenderer,
+        renderObjectId: String?,
+        mask: Brush?,
+        onRenderComplete: () -> Unit
+    ) {
         val renderObject = renderObjectId?.let { renderObjects[it] }
         renderObject?.let {
             val maskRenderer = masks.getOrPut(renderObject.id) {

@@ -47,17 +47,6 @@ public class RenderObject internal constructor(
         }
     }
 
-    private val scope = CoroutineScope(Dispatchers.Main)
-
-    public var renderedAtLeastOnce: Boolean by mutableStateOf(false)
-        private set
-
-    public fun setRendered(rendered: Boolean) {
-        scope.launch {
-            renderedAtLeastOnce = rendered
-        }
-    }
-
     internal var style: Style = Style.default
 
     internal fun updateStyle(newStyle: Style, onRenderComplete: () -> Unit) {
@@ -110,7 +99,11 @@ public class RenderObject internal constructor(
         }
 
     override fun toString(): String {
-        return "RenderObject(id='$id', rect='$highResRect', layer='${lowResLayer.id}, ${lowResLayer.subTextureSize}')"
+        return """RenderObject(
+            id='$id', rect='$highResRect', 
+            layer='${lowResLayer.id}, ${lowResLayer.subTextureSize}',
+            style=$style
+        )""".trimIndent()
     }
 
 
