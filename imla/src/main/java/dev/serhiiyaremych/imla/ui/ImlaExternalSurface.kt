@@ -1,5 +1,6 @@
 package dev.serhiiyaremych.imla.ui
 
+import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -8,6 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.CoroutineScope
@@ -267,14 +274,28 @@ public fun ImlaExternalSurface(
     surfaceSize: IntSize = IntSize.Zero,
     zOrder: AndroidExternalSurfaceZOrder = AndroidExternalSurfaceZOrder.Behind,
     isSecure: Boolean = false,
+    shape: Shape = RectangleShape,
     onUpdate: SurfaceView.(Surface) -> Unit,
     onInit: AndroidExternalSurfaceScope.() -> Unit
 ) {
+    val layoutDir = LocalLayoutDirection.current
+    val density = LocalDensity.current
     val state = rememberAndroidExternalSurfaceState()
 
     AndroidView(
         factory = { context ->
-            SurfaceView(context).apply {
+            object : SurfaceView(context) {
+                override fun dispatchDraw(canvas: Canvas) {
+                    canvas.clipPath(
+                        shape.toPath(
+                            size = Size(width.toFloat(), height.toFloat()),
+                            layoutDirection = layoutDir,
+                            density = density
+                        ).asAndroidPath()
+                    )
+                    super.dispatchDraw(canvas)
+                }
+            }.apply {
                 state.onInit()
                 holder.addCallback(state)
             }
@@ -310,4 +331,3 @@ public fun ImlaExternalSurface(
         }
     )
 }
-
