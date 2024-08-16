@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -97,14 +98,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             ImlaTheme {
                 val uiRenderer = rememberUiLayerRenderer()
-                val uiRenderer2 = rememberUiLayerRenderer()
                 var viewingImage by remember { mutableStateOf("") }
                 Box(modifier = Modifier.fillMaxWidth()) {
                     // Full height content
                     Surface(
                         Modifier
                             .fillMaxSize()
-                            .blurSource(uiRenderer2)
                             .blurSource(uiRenderer),
                     ) {
                         Content(
@@ -166,20 +165,21 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-
                      */
 
                     if (showDialog) {
                         BlurredPopup(
                             alignment = Alignment.Center,
                             onDismissRequest = {},
-                            blurStyle = Style(blurRadius = 10.dp),
-                            uiLayerRenderer = uiRenderer2,
+                            blurStyle = Style(blurRadius = 10.dp, tint = Color.Transparent),
+                            uiLayerRenderer = uiRenderer,
                             clipShape = RoundedCornerShape(12.dp)
                         ) {
                             Box(
-                                Modifier.size(200.dp, 100.dp),
-                                Alignment.Center
+                                modifier = Modifier
+                                    .size(200.dp, 100.dp)
+                                    .background(Color.Red.copy(alpha = 0.3f)),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "Test text",
@@ -270,7 +270,7 @@ class MainActivity : ComponentActivity() {
                 noiseAlpha = 0.2f,
                 tint = Color.Black.copy(alpha = 0.5f)
             ),
-            clipShape = RoundedCornerShape(14.dp),
+            clipShape = RoundedCornerShape(50),
             uiLayerRenderer = uiRenderer
         ) {
             NavigationBar(
@@ -280,27 +280,42 @@ class MainActivity : ComponentActivity() {
                 windowInsets = WindowInsets(bottom = 0.dp),
                 containerColor = Color.Transparent
             ) {
-                NavigationBarItem(selected = false, onClick = { /*TODO*/ }, icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Home, contentDescription = null
-                    )
-                })
-                NavigationBarItem(selected = false, onClick = { /*TODO*/ }, icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search, contentDescription = null
-                    )
-                })
-                NavigationBarItem(selected = false, onClick = onShowDialog, icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Notifications, contentDescription = null
-                    )
-                })
-                NavigationBarItem(selected = false, onClick = onShowSettings, icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Settings, contentDescription = null
-                    )
-                })
-
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { /*TODO*/ },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Home, contentDescription = null
+                        )
+                    }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { /*TODO*/ },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search, contentDescription = null
+                        )
+                    }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onShowDialog,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Notifications, contentDescription = null
+                        )
+                    }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onShowSettings,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Settings, contentDescription = null
+                        )
+                    }
+                )
             }
         }
     }
@@ -325,7 +340,6 @@ class MainActivity : ComponentActivity() {
                     Color.White.copy(alpha = 0.0f),
                 ),
             ),
-
              */
             uiLayerRenderer = uiRenderer
         ) {

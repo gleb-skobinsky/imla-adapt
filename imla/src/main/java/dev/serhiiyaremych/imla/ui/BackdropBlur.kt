@@ -93,8 +93,9 @@ internal fun MeasuredSurface(
         ImlaExternalSurface(
             modifier = Modifier
                 .isVisible(allComplete)
+                .matchParentSize()
                 .clipToShape(clipShape),
-            shape = clipShape,
+            surfaceSize = contentRect.size.toIntSize(),
             onUpdate = { surface ->
                 if (uiLayerRenderer.isInitialized && !attachedToSurface) {
                     uiLayerRenderer.attachRendererSurface(
@@ -114,7 +115,6 @@ internal fun MeasuredSurface(
                     updateMaskComplete = true
                 }
             },
-            surfaceSize = contentRect.size.toIntSize(),
         ) {
             onSurface { surface, _, _ ->
                 surface.onDestroyed {
@@ -123,16 +123,13 @@ internal fun MeasuredSurface(
             }
         }
 
-        // Render the content and handle offset changes
         content()
     }
 }
 
-context(BoxScope)
 private fun Modifier.clipToShape(
     shape: Shape
 ) = this
-    .matchParentSize()
     .drawWithCache {
         onDrawWithContent {
             clipPath(path = shape.toPath(size, layoutDirection, this)) {
@@ -150,6 +147,7 @@ internal fun Shape.toPath(
     val outline = createOutline(size, layoutDirection, density)
     clipPath.rewind()
     clipPath.addOutline(outline)
+    clipPath.close()
     return clipPath
 }
 
