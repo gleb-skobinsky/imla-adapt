@@ -92,6 +92,7 @@ internal fun MeasuredSurface(
         // Render the external surface
         ImlaExternalSurface(
             modifier = Modifier
+                //.clip(clipShape)
                 .isVisible(allComplete)
                 .matchParentSize()
                 .clipToShape(clipShape),

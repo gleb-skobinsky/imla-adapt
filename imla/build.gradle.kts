@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.collection)
     implementation(libs.kotlin.math)
     implementation(libs.androidx.foundation)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.graphics.core)
     implementation(libs.androidx.runtime.tracing)

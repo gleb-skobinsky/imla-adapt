@@ -72,7 +72,7 @@ import androidx.tracing.trace
 import dev.serhiiyaremych.imla.data.ApiClient
 import dev.serhiiyaremych.imla.modifier.blurSource
 import dev.serhiiyaremych.imla.ui.BackdropBlur
-import dev.serhiiyaremych.imla.ui.BlurredPopup
+import dev.serhiiyaremych.imla.ui.BlurredPopup2
 import dev.serhiiyaremych.imla.ui.theme.ImlaTheme
 import dev.serhiiyaremych.imla.ui.userpost.SimpleImageViewer
 import dev.serhiiyaremych.imla.ui.userpost.UserPostView
@@ -168,17 +168,15 @@ class MainActivity : ComponentActivity() {
                      */
 
                     if (showDialog) {
-                        BlurredPopup(
+                        BlurredPopup2(
                             alignment = Alignment.Center,
-                            onDismissRequest = {},
                             blurStyle = Style(blurRadius = 10.dp, tint = Color.Transparent),
                             uiLayerRenderer = uiRenderer,
                             clipShape = RoundedCornerShape(12.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(200.dp, 100.dp)
-                                    .background(Color.Red.copy(alpha = 0.3f)),
+                                    .size(200.dp, 100.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
