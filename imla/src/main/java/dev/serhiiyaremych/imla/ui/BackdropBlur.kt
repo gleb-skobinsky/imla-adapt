@@ -76,8 +76,8 @@ internal fun MeasuredSurface(
     contentRect: Rect,
     style: Style,
     clipShape: Shape,
-    blurMask: Brush?,
     modifier: Modifier = Modifier,
+    blurMask: Brush? = null,
     onTopOffset: () -> IntOffset = {
         IntOffset(
             x = contentRect.left.toInt(),
@@ -131,7 +131,7 @@ internal fun MeasuredSurface(
     }
 }
 
-private fun Modifier.clipToShape(
+internal fun Modifier.clipToShape(
     shape: Shape
 ) = this
     .drawWithCache {

@@ -35,7 +35,7 @@ internal inline fun checkGlError(action: Unit = Unit) {
                     "checkGlError",
                     "failed with error $error on thread ${Thread.currentThread().name}"
                 )
-                throwError(error)
+                // throwError(error)
             }
         }
     }

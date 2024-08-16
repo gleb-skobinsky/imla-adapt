@@ -1,8 +1,6 @@
 package dev.serhiiyaremych.imla.ui
 
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,14 +13,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toOffset
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import dev.serhiiyaremych.imla.uirenderer.Style
 import dev.serhiiyaremych.imla.uirenderer.UiLayerRenderer
@@ -49,41 +40,8 @@ public fun BlurredPopup(
         )
     }
     val positionProvider = remember(alignment, offset) {
-        object : PopupPositionProvider {
-            override fun calculatePosition(
-                anchorBounds: IntRect,
-                windowSize: IntSize,
-                layoutDirection: LayoutDirection,
-                popupContentSize: IntSize
-            ): IntOffset {
-                val anchorAlignmentPoint = alignment.align(
-                    IntSize.Zero,
-                    anchorBounds.size,
-                    layoutDirection
-                )
-                // Note the negative sign. Popup alignment point contributes negative offset.
-                val popupAlignmentPoint = -alignment.align(
-                    IntSize.Zero,
-                    popupContentSize,
-                    layoutDirection
-                )
-                val resolvedUserOffset = IntOffset(
-                    offset.x * (if (layoutDirection == LayoutDirection.Ltr) 1 else -1),
-                    offset.y
-                )
-
-                val completeOffset = anchorBounds.topLeft +
-                        anchorAlignmentPoint +
-                        popupAlignmentPoint +
-                        resolvedUserOffset
-
-                contentRect = Rect(
-                    offset = completeOffset.toOffset(),
-                    size = popupContentSize.toSize()
-                )
-
-                return completeOffset
-            }
+        ImlaPopupPositionProvider(alignment, offset) {
+            contentRect = it
         }
     }
 
@@ -92,19 +50,15 @@ public fun BlurredPopup(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        Surface(
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            MeasuredSurface(
-                uiLayerRenderer = uiLayerRenderer,
-                contentRect = contentRect,
-                onTopOffset = getTopOffset,
-                blurMask = blurMask,
-                clipShape = clipShape,
-                style = blurStyle,
-                content = content,
-            )
-        }
+        MeasuredSurface(
+            uiLayerRenderer = uiLayerRenderer,
+            contentRect = contentRect,
+            onTopOffset = getTopOffset,
+            blurMask = blurMask,
+            clipShape = clipShape,
+            style = blurStyle,
+            content = content,
+        )
     }
 }
 
@@ -127,3 +81,4 @@ public fun BoxScope.BlurredPopup2(
         content()
     }
 }
+
