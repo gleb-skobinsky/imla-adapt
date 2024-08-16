@@ -12,6 +12,7 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,7 +38,7 @@ import java.util.UUID
 
 @Composable
 @NonRestartableComposable
-private fun rememberNewId() = remember { UUID.randomUUID().toString() }
+private fun rememberNewId() = rememberSaveable { UUID.randomUUID().toString() }
 
 @Composable
 public fun BackdropBlur(
