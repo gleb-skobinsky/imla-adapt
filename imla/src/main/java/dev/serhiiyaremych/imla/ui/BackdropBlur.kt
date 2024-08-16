@@ -73,27 +73,29 @@ public fun BackdropBlur(
 internal fun MeasuredSurface(
     uiLayerRenderer: UiLayerRenderer,
     contentRect: Rect,
-    onTopOffset: () -> IntOffset,
     style: Style,
     clipShape: Shape,
     blurMask: Brush?,
     modifier: Modifier = Modifier,
+    onTopOffset: () -> IntOffset = {
+        IntOffset(
+            x = contentRect.left.toInt(),
+            y = contentRect.top.toInt()
+        )
+    },
     content: @Composable BoxScope.() -> Unit
 ) {
     val id = rememberNewId()
-    Box(modifier) {
-        var updateOffsetComplete by remember { mutableStateOf(false) }
-        var updateMaskComplete by remember { mutableStateOf(false) }
-        var updateStyleComplete by remember { mutableStateOf(false) }
-        val allComplete =
-            updateOffsetComplete && updateMaskComplete && updateStyleComplete
-
+    var updateOffsetComplete by remember { mutableStateOf(false) }
+    var updateMaskComplete by remember { mutableStateOf(false) }
+    var updateStyleComplete by remember { mutableStateOf(false) }
+    val allComplete =
+        updateOffsetComplete && updateMaskComplete && updateStyleComplete
+    Box(modifier.isVisible(allComplete)) {
         var attachedToSurface = remember { false }
         // Render the external surface
         ImlaExternalSurface(
             modifier = Modifier
-                //.clip(clipShape)
-                .isVisible(allComplete)
                 .matchParentSize()
                 .clipToShape(clipShape),
             surfaceSize = contentRect.size.toIntSize(),

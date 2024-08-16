@@ -14,7 +14,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -42,71 +41,69 @@ public fun BlurredPopup(
     clipShape: Shape = RectangleShape,
     content: @Composable BoxScope.() -> Unit
 ) {
-    with(LocalDensity.current) {
-        var contentRect by remember { mutableStateOf(Rect.Zero) }
-        val getTopOffset = {
-            IntOffset(
-                x = contentRect.left.toInt(),
-                y = contentRect.top.toInt()
-            )
-        }
-        val positionProvider = remember(alignment, offset) {
-            object : PopupPositionProvider {
-                override fun calculatePosition(
-                    anchorBounds: IntRect,
-                    windowSize: IntSize,
-                    layoutDirection: LayoutDirection,
-                    popupContentSize: IntSize
-                ): IntOffset {
-                    val anchorAlignmentPoint = alignment.align(
-                        IntSize.Zero,
-                        anchorBounds.size,
-                        layoutDirection
-                    )
-                    // Note the negative sign. Popup alignment point contributes negative offset.
-                    val popupAlignmentPoint = -alignment.align(
-                        IntSize.Zero,
-                        popupContentSize,
-                        layoutDirection
-                    )
-                    val resolvedUserOffset = IntOffset(
-                        offset.x * (if (layoutDirection == LayoutDirection.Ltr) 1 else -1),
-                        offset.y
-                    )
-
-                    val completeOffset = anchorBounds.topLeft +
-                            anchorAlignmentPoint +
-                            popupAlignmentPoint +
-                            resolvedUserOffset
-
-                    contentRect = Rect(
-                        offset = completeOffset.toOffset(),
-                        size = popupContentSize.toSize()
-                    )
-
-                    return completeOffset
-                }
-            }
-        }
-
-        Popup(
-            popupPositionProvider = positionProvider,
-            onDismissRequest = onDismissRequest,
-            properties = properties
-        ) {
-            Surface(
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                MeasuredSurface(
-                    uiLayerRenderer = uiLayerRenderer,
-                    contentRect = contentRect,
-                    onTopOffset = getTopOffset,
-                    blurMask = blurMask,
-                    clipShape = clipShape,
-                    style = blurStyle,
-                    content = content,
+    var contentRect by remember { mutableStateOf(Rect.Zero) }
+    val getTopOffset = {
+        IntOffset(
+            x = contentRect.left.toInt(),
+            y = contentRect.top.toInt()
+        )
+    }
+    val positionProvider = remember(alignment, offset) {
+        object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect,
+                windowSize: IntSize,
+                layoutDirection: LayoutDirection,
+                popupContentSize: IntSize
+            ): IntOffset {
+                val anchorAlignmentPoint = alignment.align(
+                    IntSize.Zero,
+                    anchorBounds.size,
+                    layoutDirection
                 )
+                // Note the negative sign. Popup alignment point contributes negative offset.
+                val popupAlignmentPoint = -alignment.align(
+                    IntSize.Zero,
+                    popupContentSize,
+                    layoutDirection
+                )
+                val resolvedUserOffset = IntOffset(
+                    offset.x * (if (layoutDirection == LayoutDirection.Ltr) 1 else -1),
+                    offset.y
+                )
+
+                val completeOffset = anchorBounds.topLeft +
+                        anchorAlignmentPoint +
+                        popupAlignmentPoint +
+                        resolvedUserOffset
+
+                contentRect = Rect(
+                    offset = completeOffset.toOffset(),
+                    size = popupContentSize.toSize()
+                )
+
+                return completeOffset
             }
+        }
+    }
+
+    Popup(
+        popupPositionProvider = positionProvider,
+        onDismissRequest = onDismissRequest,
+        properties = properties
+    ) {
+        Surface(
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            MeasuredSurface(
+                uiLayerRenderer = uiLayerRenderer,
+                contentRect = contentRect,
+                onTopOffset = getTopOffset,
+                blurMask = blurMask,
+                clipShape = clipShape,
+                style = blurStyle,
+                content = content,
+            )
         }
     }
 }
